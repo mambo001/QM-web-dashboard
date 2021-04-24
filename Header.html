@@ -1,0 +1,32 @@
+<div id="header" class="row">
+  <div class="input-field col s8">
+    <i class="material-icons prefix">search</i>
+    <input 
+    v-on:input="filterQuotes"
+    placeholder="Search Cases" 
+    id="search" 
+    type="search" 
+    class="validate">
+
+    <!-- <label for="first_name">First Name</label> -->
+  </div>
+  <div 
+  class="input-field col s4" 
+  style="display: flex;justify-content: space-between;align-items: baseline;">
+    <button id="refreshTableBtn"
+    class="btn green white-text waves-effect waves-light"
+    v-on:click="refreshTableDate"
+    >
+      <i class="material-icons">refresh</i>
+    </button>
+    <button id="toggleDarkModeBtn"
+    class="btn black lighten-2 white-text waves-effect waves-light"
+    v-on:click="toggleDarkMode"
+    >
+      <i class="material-icons">brightness_1</i>
+    </button>
+    <p class="">Last Update: 
+      <span id="lastUpdated">{{ dateObject }}<span>
+    </p>
+  </div>
+</div>

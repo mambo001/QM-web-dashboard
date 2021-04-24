@@ -1,0 +1,179 @@
+<div class="row">
+  <div class="col s12 l8" >
+    <table class="striped highlight centered" id="prioTable">
+      <div class="">
+        <a id="someShit"
+          class="btn waves-light waves-effect" 
+          @click="greet"
+          >Filter
+        </a>
+        <a id="anotherShit"
+          class="btn waves-light waves-effect" 
+          @click="greet"
+          >Reshuffle Prio
+        </a>
+      <div>
+      <thead>
+        <tr>
+          <th 
+          v-for="(header, index) in prioHeader"
+          >
+            {{ header }}
+          </th>
+
+        </tr>
+      </thead>
+      <tbody>        
+        <tr v-for="c in filteredPrio" v-bind:id="c.LDAP">
+          <td 
+          v-for="(k, key, index) in c"
+          >
+           <i class='material-icons' v-if="index == 6">{{ 
+             k == 'Night'
+             ? 'brightness_4'
+             : k == 'Morning'
+                ? 'brightness_5'
+                : 'brightness_6'
+             }}
+            </i>
+            
+            <div class="valign-center" v-else-if="index == 5">
+              <button 
+                class="btn blue waves-effect waves-light tooltipped"
+                data-position="top" 
+                data-tooltip="CASES"
+                data-action="CASES"
+                v-bind:data-rowid="c.LDAP"
+                @click="changeStatus"
+              >
+                <i class="material-icons">event_available</i>
+              </button>
+              <button 
+                class="btn blue darken-4 waves-effect waves-light tooltipped"
+                data-position="top" 
+                data-tooltip="SKIP"
+                data-action="SKIP"
+                v-bind:data-rowid="c.LDAP"
+                @click="changeStatus"
+              >
+                <i class="material-icons">event_busy</i>
+              </button>
+            </div>
+           <span v-else>{{ k }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="col s12 l4">
+    <table class="striped highlight centered" id="expiringCasesTable">
+      <thead>
+        <tr>
+          <th 
+          v-for="(header, index) in casesHeader"
+          :class="{
+            'hide': optionalElements.includes(index)
+          }"
+          >
+            {{ header }}
+          </th>
+
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="c in filteredCases">
+          <td 
+          v-for="(k, key, index) in c"
+          :class="{
+            'orange white-text': index == 6 && k == 'Processing',
+            'red white-text': index == 6 && k == '',
+            'hide': optionalElements.includes(index)
+          }">
+           {{ index == 1
+              ? new Date(k).toLocaleString() 
+              : index == 5 
+                ? new Date(k).toLocaleTimeString() 
+                : k
+                
+           }} 
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="col s12">
+    <table class="striped highlight centered" id="monitoringCasesTable">
+      <thead>
+        <tr>
+          <th 
+          v-for="(header, index) in casesHeader"
+          :class="{
+            'hide-on-med-and-down': optionalElements.includes(index)
+          }"
+          >
+            {{ header }}
+          </th>
+
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="c in cases">
+          <td 
+          v-for="(k, key, index) in c"
+          :class="{
+            'green white-text': index == 6 && k == 'Completed',
+            'orange white-text': index == 6 && k == 'Processing',
+            'blue white-text': index == 6 && k == 'Duplicate',
+            'red white-text': index == 6 && k == '',
+
+
+            'hide-on-med-and-down': optionalElements.includes(index)
+          }">
+           {{ index == 1
+              ? new Date(k).toLocaleString() 
+              : index == 5 
+                ? new Date(k).toLocaleTimeString() 
+                : k
+                
+           }} 
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="sidebar" class="col s3 hide">
+
+    <div id="reset-filter" v-on:click="reset">
+      Reset Filters
+    </div>
+    
+    <div id="authors">
+      <ul class="collection with-header">
+        <li class="collection-header"><h6>Authors</h6></li>
+        <a 
+        class="collection-item"
+        v-for="author in authors" 
+        v-on:click="selectAuthor" 
+        :data="author">
+          {{ author }}
+        </a>
+      </ul>
+    </div>
+
+    <div id="tags">
+
+      <ul class="collection with-header">
+        <li class="collection-header"><h6>Tags</h6></li>
+        <a class="collection-item" v-for="tag in tags" v-on:click="selectTag" :data="tag">
+          {{ tag }}
+        </a>
+      </ul>
+
+    </div>
+
+  </div>
+
+
+</div>

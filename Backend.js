@@ -1,0 +1,286 @@
+// SPR DUMP
+// Testing
+// const SPR_DUMP = SpreadsheetApp.openById("1zkW4cvxVHJxAlQRSM-1hWhzksfJuOoy2nK03TZlhluY");
+// Production
+const SPR_DUMP = SpreadsheetApp.openById("1k2jLrOAeCG3vvCxX1xm205fztiXoAEuFuqPDGJk3Ln4");
+// Tab Name
+const MONITOR_LOGS_TAB = SPR_DUMP.getSheetByName("Monitor Logs");
+
+// QM MAIN DUMP
+const QM_Dump = SpreadsheetApp.openById("12OdxpPwNiu_XJOSuRqk_QJpYFOgEfN9EEuxYPfQWDmI");
+const SPR_tab = QM_Dump.getSheetByName("SPR-AR");
+const QMPrio_tab = QM_Dump.getSheetByName("QM - Prio");
+
+function getMonitoringLogsData() {
+  let data = {};
+  data.cases = _readData(SPR_tab);
+  console.log(SPR_tab)
+  console.log(data.cases);
+
+  return JSON.stringify(data);
+}
+
+function getPrioData(){
+  let data = {};
+  let array = _readData(QMPrio_tab);
+  let filteredArray = array.filter(p => p.LDAP != '')
+  data.prio = filteredArray
+  console.log(data.prio);
+
+  return JSON.stringify(data);
+}
+
+function getUnprocessedCases(){
+  const cutOffLastFive = (array) => {
+    const [...rest] = array;
+    return rest.slice(-30);
+  }
+  const uniqueResult = arr => {
+    const seen = {}
+    let out = []
+    for (let v of arr) {
+      if (!seen[v["ldap"]]) {
+        seen[v["ldap"]] = true
+        out.push(v)
+      }
+    }
+    return out
+  }
+  let data = {};
+  let array = _readData(SPR_tab);
+  let recentCasesArray = cutOffLastFive(array);
+  let filteredArray = recentCasesArray.filter(p => p.Status == '' & p.Remarks != 'Duplicate')
+
+  const result = uniqueResult(filteredArray
+    .map(c => ({
+      ldap: c["Assigned To"],
+      assignedCases: filteredArray
+        .filter(d => d["Assigned To"] === c["Assigned To"])
+        .length
+    })
+  ));
+
+  data.unassignedCases = result
+
+  // console.log(array.length, recentCasesArray.length, data.cases.length)
+  console.log(data);
+
+  return JSON.stringify(data);
+}
+
+function doUpdateStatus(req) {
+  // TESTING
+  let { id, action } = JSON.parse(req)
+
+  let data = QMPrio_tab.getRange("A:G").getValues();
+  let filteredMofo = data.filter(e => e != '' || e == null);
+  let ldapList = filteredMofo.map(e => e[0].toString().toLowerCase());
+  let statusList = filteredMofo.map(e => e[5].toString().toLowerCase());
+
+  let posIndex = ldapList.indexOf(id.toString().toLowerCase());
+  let rowNumber = posIndex === -1 ? 0 : posIndex + 1;
+
+  console.log(posIndex,rowNumber);
+
+  // Edit operation
+  QMPrio_tab.getRange(rowNumber, 6, 1, 1).setValue(action)
+
+  // Value changed checker
+  let updatedStatus = QMPrio_tab.getRange(rowNumber, 6, 1, 1).getValues();
+  console.log(updatedStatus);
+
+  return JSON.stringify({
+    message: 'Updated sucessfully',
+    operationCode: 202,
+    newValue: updatedStatus
+  })
+  
+}
+
+function _doFindCaseIDPosition(id){
+  let searchKeyword = id;
+  let caseIDArray = MONITOR_LOGS_TAB
+      .getRange(2, 6, MONITOR_LOGS_TAB.getLastRow()-1, 1)
+      .getValues()
+      .map(r => r[0].toString().toLowerCase());
+  let posIndex = caseIDArray.indexOf(searchKeyword.toString().toLowerCase());
+  let rowNumber = posIndex === -1 ? 0 : posIndex + 2;
+
+  return rowNumber;
+}
+
+function _doFindLDAPPosition(id){
+  // id = 'reubenmark'
+  let searchKeyword = id;
+  let QMPrioData = QMPrio_tab
+      .getRange("A2:G")
+      .getValues();
+  let LDAPArray = QMPrioData.map(r => r[0].toString().toLowerCase());
+  let QMMTDArray = QMPrioData.map(r => r[2].toString().toLowerCase());
+  let posIndex = LDAPArray.indexOf(searchKeyword.toString().toLowerCase());
+  let rowNumber = posIndex === -1 ? 0 : posIndex + 2;
+  let rowValues = QMPrioData[posIndex]
+  console.log(searchKeyword,posIndex, rowNumber, rowValues)
+  return JSON.stringify({
+    rowNumber,
+    rowValues
+  });
+}
+
+
+
+function doUpdateCaseState(req){
+  let result;
+  let {caseID, caseStatus} = req.parameter;
+  let rowNumber = _doFindCaseIDPosition(caseID);
+  let newCaseStatus = [[caseStatus]];
+
+  // TEST - Check Case status current value
+  // let caseStatus = MONITOR_LOGS_TAB.getRange(rowNumber, 8, 1 ,1).getValues();
+  // console.log(caseStatus);
+
+  
+  console.log(rowNumber, caseID, caseStatus);
+  
+  MONITOR_LOGS_TAB.getRange(rowNumber, 8, 1, 1).setValues(newCaseStatus);
+  result = "Updated successfully";
+
+  // Test
+  let updatedStatus = MONITOR_LOGS_TAB.getRange(rowNumber, 8, 1, 1).getValues();
+  console.log(updatedStatus);
+
+  return response().json({
+    status: true,
+    message: result
+  });
+}
+
+function doDeductPrio(arr) {
+  // PROD
+  if (!arr.length) return
+  console.log(arr)
+  const tallyArray = JSON.parse(arr);
+
+  tallyArray.forEach(({ ldap, 'assignedCases':count }) => {
+    const LDAPRowData = _doFindLDAPPosition(ldap);
+    const { rowNumber,rowValues } = JSON.parse(LDAPRowData);
+    const [ ,currentMTD,QMMTD,MTD,...rest ] = rowValues;
+    const subtractValues = (currentValue, newValue) => (currentValue - newValue);
+    const finalValue = subtractValues(QMMTD, count);
+
+    // Edit operation
+    QMPrio_tab.getRange(rowNumber, 3, 1, 1).setValue(finalValue)
+  });
+
+  // Value changed checker
+  // updatedCount = QMPrio_tab.getRange("A2:G").getValues();
+  // console.log(updatedCount);
+
+  return JSON.stringify({
+    message: 'Updated sucessfully',
+    operationCode: 202
+  })
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Utility
+// Read data
+function _readData(sheetObject, properties) {
+
+   if (typeof properties == "undefined") {
+      properties = _getHeaderRow(sheetObject);
+      properties = properties.map(function (p) {
+        return p;
+      });
+   }
+
+   var rows = _getDataRows(sheetObject),
+      data = [];
+
+   for (var r = 0, l = rows.length; r < l; r++) {
+      var row = rows[r],
+          record = {};
+
+      for (var p in properties) {
+         record[properties[p]] = row[p];
+      }
+
+      data.push(record);
+   }
+   
+   return data;
+}
+// Update data
+function _updateData(req, sheet) {
+  console.log(sheet)
+  console.log(req)
+  let id = req.id;
+  // let updates = JSON.parse(req.data);
+  let updates = req.data;
+
+  let lr = sheet.getLastRow();
+
+  let headers = _getHeaderRow(sheet);
+  let updatesHeader = Object.keys(updates);
+  
+  // Looping for row
+  for (let row = 1; row <= lr; row++) {
+    // Looping for available header / column
+    for (let i = 0; i <= (headers.length - 1); i++) {
+        let header = headers[i];
+        // Looping for column need to updated
+        for (let update in updatesHeader) {
+          if (updatesHeader[update] == header) {
+              // Get ID for every row
+              let rid = sheet.getRange(row, 1).getValue();
+
+              if (rid == id) {
+                // Lets Update
+                sheet.getRange(row, i + 1).setValue(updates[updatesHeader[update]]);
+              }
+          }
+        }
+    }
+  }
+
+  
+  // Output
+  return response().json({
+    status: true,
+    message: "Update successfully"
+  });
+}
+
+function _getDataRows(sheetObject) {
+   var sh = sheetObject;
+
+   return sh.getRange(2, 1, sh.getLastRow() - 1, sh.getLastColumn()).getValues();
+}
+function _getHeaderRow(sheetObject) {
+   var sh = sheetObject;
+
+   return sh.getRange(1, 1, 1, sh.getLastColumn()).getValues()[0];
+}
+function response() {
+   return {
+      json: function(data) {
+         return ContentService
+            .createTextOutput(JSON.stringify(data))
+            .setMimeType(ContentService.MimeType.JSON);
+      }
+   }
+}

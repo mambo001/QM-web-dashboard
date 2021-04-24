@@ -1,0 +1,505 @@
+<script>
+  // URL to the JSON data of the Google Spreadsheet
+  // let gsheet_url = "https://spreadsheets.google.com/feeds/list/1eNmGC4mZpIGx9vyL_Y0m0wEvsnlREGYoj04LH9atoTg/1/public/values?alt=json";
+  
+  // Global variables to hold the data from the spreadsheet
+  let quoteList = [];
+  let authorList = [];
+  let tagList = [];
+  let caseList = [];
+  let caseHeaderList = [];
+  let prioList = [];
+  let filteredPrioList = [];
+  let prioHeaderList = [];
+
+  const { serverFunctions } = new Server();
+
+  // Load data when the page is ready
+  let app = new Vue({
+    el: '#app',
+    data () {
+      return {
+        info: null
+      }
+    }
+  });
+
+  let example2 = new Vue({
+    el: '#example-2',
+    data: {
+      name: 'Vue.js',
+      unassignedCasesList: []
+    },
+    methods: {
+      greet: function (event) {
+        console.log('event',prioTable)
+        prioTable.greet()
+        prioTable.prio = prioList
+      },
+      swalTest: function() {
+        Swal.fire({
+          title: 'Go get something',
+          showCancelButton: true,
+          confirmButtonText: 'Look up',
+          showLoaderOnConfirm: true,
+          preConfirm: (login) => {
+            return serverFunctions
+                .getUnprocessedCases()
+                .then(data => {
+                    const { unassignedCases } = JSON.parse(data);
+                    this.unassignedCasesList = unassignedCases
+                    console.log(data, unassignedCases)
+                    
+                    return unassignedCases
+                })
+                .catch(error => {
+                    Swal.showValidationMessage(
+                      `Request failed: ${error}`
+                    )
+                })
+          },
+          allowOutsideClick: () => !Swal.isLoading()
+        })
+        .then(({ 'value':assignedCases }) => {
+          if (!assignedCases.length) Swal.fire(
+            {icon: 'error', title: 'No assigned cases found'}
+          )
+          console.log(assignedCases)
+          const parsedAssignedCases = JSON.stringify(assignedCases)
+
+          Swal.fire({
+            title: 'All done!',
+            html: `
+              Assigned cases:
+              <ul class="collection">
+                ${assignedCases
+                .map(c => {
+                  return `
+                    <li class="collection-item">
+                    ${c.ldap} : ${c.assignedCases}
+                    </li>
+                  `
+                })
+                .join('')}
+              </ul>
+            `,
+            confirmButtonText: 'Undo Assignment!',
+            showLoaderOnConfirm: true,
+            allowOutsideClick: () => !Swal.isLoading(),
+            preConfirm: () => {
+              return serverFunctions
+                .doDeductPrio(parsedAssignedCases)
+                .then(response => {
+                  let { message,operationCode,newValue } = JSON.parse(response);
+                  console.log(message,operationCode,newValue)
+                })
+                .catch(error => {
+                  console.log('ERROR',error)
+                  Swal.showValidationMessage(
+                    `Request failed: ${error}`
+                  )
+                })
+            }
+          })
+        })
+        // .then((response) => {
+        //   if (!response.length) Swal.fire({
+        //     icon: 'error', 
+        //     title: 'No assigned cases found'
+        //   })
+        //   console.log(JSON.stringify(response))
+        // })
+      }
+    },
+    created() {
+      console.log('test')
+      this.swalTest()
+    }
+  })
+
+  
+
+  // Table
+  let table = new Vue({
+    el: '#monitoringCasesTable',
+    data: {
+      cases: [],
+      casesHeader: [],
+      highlightedElements: [6],
+      optionalElements: [0,1,7,8,9],
+      prefixURL: 'https://cases.connect.corp.google.com/#/case/',
+      intervalID: ''
+    },
+    computed: {
+      // classObject: function w(k) {
+      //   return {
+
+      //   }
+      // }
+    },
+    mounted() {
+      this.renderTableData()
+      this.recurringRender()
+    },
+    methods: {
+      renderTableData: function() {
+        google.script.run.withSuccessHandler(data => {
+          let parsedCases = JSON.parse(data).cases
+
+          caseList = parsedCases.reverse()
+          caseHeaderList = Object.keys(caseList[0])
+
+          // console.log(caseList.length,caseHeaderList)
+
+          this.cases = caseList
+          this.casesHeader = caseHeaderList
+          lastUpdatedDate.updateDisplay()
+
+        }).getMonitoringLogsData()
+      },
+      recurringRender: function() {
+        this.intervalID = setInterval(this.renderTableData, 20000)
+      }
+    }
+  });
+
+
+  // Expiring Table
+  let expiringTable = new Vue({
+    el: '#expiringCasesTable',
+    data: {
+      cases: [],
+      filteredCases: [],
+      casesHeader: [],
+      highlightedElements: [6],
+      optionalElements: [0,1,7,8,9],
+      prefixURL: 'https://cases.connect.corp.google.com/#/case/',
+      intervalID: ''
+    },
+    computed: {
+      // classObject: function w(k) {
+      //   return {
+
+      //   }
+      // }
+    },
+    mounted() {
+      this.renderTableData()
+      this.recurringRender()
+    },
+    methods: {
+      renderTableData: function() {
+        google.script.run.withSuccessHandler(data => {
+          let parsedCases = JSON.parse(data).cases
+
+          caseList = parsedCases.reverse()
+          caseHeaderList = Object.keys(caseList[0])
+
+          // console.log(caseList.length,caseList)
+          this.filteredCases = caseList.filter(c => c.Status == 'Processing' || c.Status == '')
+          this.cases = caseList
+          this.casesHeader = caseHeaderList
+          lastUpdatedDate.updateDisplay()
+
+        }).getMonitoringLogsData()
+      },
+      recurringRender: function() {
+        this.intervalID = setInterval(this.renderTableData, 20000)
+      }
+    }
+  });
+
+  let filterButtons = new Vue({
+    el: '#someShit',
+    methods: {
+      greet: function(event) {
+        console.log('clicked:',event.target)
+        console.log(prioTable, prioTable.prio)
+        prioTable.toggleShit()
+      }
+    }
+  });
+
+  let reshuffleButton = new Vue({
+    el: '#anotherShit',
+    methods: {
+      greet: function(event) {
+        console.log('clicked:',event.target)
+        console.log(prioTable, prioTable.prio)
+        prioTable.toggleShit()
+      }
+    }
+  });
+  
+
+  // prioTable
+  let prioTable = new Vue({
+    el: '#prioTable',
+    data: {
+      prio: [],
+      filteredPrio: [],
+      prioHeader: [],
+      highlightedElements: [6],
+      optionalElements: [0,1,7,8,9],
+      intervalID: '',
+      isHidden: true
+    },
+    mounted() {
+      this.renderTableData()
+      this.recurringRender()
+    },
+    created: function() {
+      console.log('CREATED!')
+    },
+    methods: {
+      renderTableData: function() {
+        google.script.run.withSuccessHandler(data => {
+          let parsedPrio = JSON.parse(data).prio
+          
+          // console.log(parsedPrio,Array.isArray(parsedPrio[0]))
+          parsedPrio.sort((a,b) => a.MTD < b.MTD)
+
+          prioList = parsedPrio
+          filteredPrioList = prioList.filter(c => c.Status !== 'SKIP')
+          prioHeaderList = Object.keys(prioList[0])
+          
+
+          this.prio = prioList
+          this.filteredPrio = this.isHidden ? filteredPrioList : prioList
+          this.prioHeader = prioHeaderList
+          lastUpdatedDate.updateDisplay()
+
+          // console.log(this.filteredPrio.length,this.filteredPrio)
+          
+          this.initializeMaterialElements()
+
+        }).getPrioData()
+      },
+      recurringRender: function() {
+        this.intervalID = setInterval(this.renderTableData, 20000)
+      },
+      toggleShit: function() {
+        this.isHidden = !this.isHidden
+        // this.filteredPrio = prioList
+      },
+      initializeMaterialElements: function() {
+          let tooltipElems = document.querySelectorAll('.tooltipped');
+          let tooltipInstances = M.Tooltip.init(tooltipElems, {});
+
+          let selectElems = document.querySelectorAll('select:not(.swal2-select)');
+          let selectInstances = M.FormSelect.init(selectElems, {});
+      },
+      changeStatus: function(e) {
+        let requestObject;
+        const button = e.currentTarget;
+        const action = e.currentTarget.dataset.action;
+        const id = e.currentTarget.dataset.rowid;
+        
+        console.log(button,action,id)
+
+        // Toggle button onclick
+        button.classList.add('disabled');
+
+        google.script.run
+        .withSuccessHandler(data => {
+          console.log(data)
+          button.classList.remove('disabled');
+          M.toast({html: 'Successfully updated!'})
+        })
+        .doUpdateStatus(JSON.stringify({
+          id,
+          action
+        }));
+      }
+    },
+    watch: {
+      isHidden: function(val) {
+        val ? this.filteredPrio = filteredPrioList : this.filteredPrio = prioList
+      }
+    }
+  });
+
+
+  // Search bar
+  let search = new Vue({
+    el: '#search',
+    methods: {
+      filterQuotes: function(event) {
+        let query = event.target.value;
+
+        // Reset filter if query is empty string
+        if (query.length == 0) {
+          table.cases = caseList;
+        }
+
+        // Do nothing if query is too short
+        if (query.length < 3) return;
+        
+        let filtered = [];
+        query = query.toLowerCase();
+        console.log(query);
+
+        // Search in quote, author and source
+        caseList.forEach(function(value) {
+          let { 
+            'Study ID':studyID, 
+            'Assigned To':ldap, 
+            'Case ID':caseID
+          } = value;
+          studyID = studyID.toString();
+          ldap = ldap.toLowerCase();
+          caseID = caseID.toLowerCase();
+          if (
+            (studyID.search(query) >= 0) ||
+            (ldap.search(query) >= 0) ||
+            (caseID.search(query) >= 0)) {
+            filtered.push(value);
+          }
+        });
+        table.cases = filtered;
+      }
+    }
+  });
+
+  let lastUpdatedDate = new Vue({
+    el: '#lastUpdated',
+    data: {
+      dateObject: new Date().toLocaleTimeString()
+    },
+    created () {
+      this.updateDisplay()
+    },
+    methods: {
+      updateDisplay: function() {
+        this.dateObject = new Date().toLocaleTimeString()
+      }
+    }
+  });
+
+  let toggleDarkModeBtn = new Vue({
+    el: '#toggleDarkModeBtn',
+    methods: {
+      toggleDarkMode: function(e) {
+        console.log(e.currentTarget)
+        document.body.classList.toggle('dark-body', 'white-text');
+      }
+    }   
+  });
+
+  let refreshTableBtn = new Vue({
+    el: '#refreshTableBtn',
+    methods: {
+      refreshTableDate: function(event) {
+        console.log('clicked:',event.target)
+        table.renderTableData()
+        expiringTable.renderTableData()
+      }
+    }
+  });
+
+  // let quotes = new Vue({
+  //   el: '#quotes',
+  //   data: {
+  //     quotes: quoteList
+  //   }
+  // });
+
+  let authors = new Vue({
+    el: '#authors',
+    data: {
+      authors: authorList,
+      isActive: false
+      
+    },
+    methods: {
+      selectAuthor: function(event) {
+        let selectedLI = event.currentTarget;
+        let selectedUL = event.currentTarget.parentElement;
+        let allLI = Array.from(selectedUL.children);
+
+        
+        console.log(selectedLI)
+        if (!selectedLI.classList.contains('active')){
+          allLI.forEach(li => li.classList.remove('active'))
+          selectedLI.classList.add('active')
+          let selected = [];
+          let author = event.target.getAttribute('data');
+          quoteList.forEach(function(value) {
+            if (value.author == author) {
+              selected.push(value);
+            }
+          });
+          quotes.quotes = selected;
+
+          
+        } else {
+          allLI.forEach(li => li.classList.remove('active'))
+          authors.reset()
+        }        
+      },
+      reset: function(event) {
+        quotes.quotes = quoteList;
+      }
+    }
+  });
+
+  let resetFilter = new Vue({
+    el: '#reset-filter',
+    methods: {
+      reset: function(event) {
+        quotes.quotes = quoteList;
+      }
+    }
+  });
+
+  let tags = new Vue({
+    el: '#tags',
+    data: {
+      tags: tagList
+    },
+    methods: {
+      selectTag: function(event) {
+        let selected = [];
+        let tag = event.target.getAttribute('data');
+        quoteList.forEach(function(value) {
+          if (value.tags.includes(tag)) {
+            selected.push(value);
+          }
+        });
+        quotes.quotes = selected;
+      }
+    }
+  });
+
+  function parseData(entries) {
+    
+    let authorSet = new Set();
+    let tagSet = new Set();
+
+    entries.forEach(function(value) {
+      let entry = {
+        "quote": value.gsx$quote.$t,
+        "author": value.gsx$author.$t,
+        "source": value.gsx$source.$t,
+        "tags": value.gsx$tags.$t.split(",")
+      };
+      authorSet.add(entry.author);
+
+      entry.tags.forEach(function(t) {
+        tagSet.add(t);
+      });
+
+      quoteList.push(entry);
+    });
+    authorList = Array.from(authorSet);
+    authorList.sort();
+
+    tagList = Array.from(tagSet);
+    tagList.sort();
+
+    quotes.quotes = quoteList;
+    authors.authors = authorList;
+    tags.tags = tagList;
+  }
+
+</script>
