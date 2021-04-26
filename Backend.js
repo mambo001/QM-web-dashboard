@@ -1,8 +1,8 @@
 // SPR DUMP
 // Testing
-// const SPR_DUMP = SpreadsheetApp.openById("1zkW4cvxVHJxAlQRSM-1hWhzksfJuOoy2nK03TZlhluY");
-// Production
-const SPR_DUMP = SpreadsheetApp.openById("1k2jLrOAeCG3vvCxX1xm205fztiXoAEuFuqPDGJk3Ln4");
+const SPR_DUMP = SpreadsheetApp.openById("1D0sp2Ay6fBqqGu5HTwRmhAVtJJy7dUQ0nUrYxIZDcXU");
+// // Production
+// const SPR_DUMP = SpreadsheetApp.openById("1k2jLrOAeCG3vvCxX1xm205fztiXoAEuFuqPDGJk3Ln4");
 // Tab Name
 const MONITOR_LOGS_TAB = SPR_DUMP.getSheetByName("Monitor Logs");
 
@@ -98,6 +98,7 @@ function doUpdateStatus(req) {
 }
 
 function _doFindCaseIDPosition(id){
+  // id = '4-6273000030939'
   let searchKeyword = id;
   let caseIDArray = MONITOR_LOGS_TAB
       .getRange(2, 6, MONITOR_LOGS_TAB.getLastRow()-1, 1)
@@ -105,7 +106,7 @@ function _doFindCaseIDPosition(id){
       .map(r => r[0].toString().toLowerCase());
   let posIndex = caseIDArray.indexOf(searchKeyword.toString().toLowerCase());
   let rowNumber = posIndex === -1 ? 0 : posIndex + 2;
-
+  console.log(rowNumber, posIndex)
   return rowNumber;
 }
 
@@ -162,6 +163,7 @@ function doDeductPrio(arr) {
   const tallyArray = JSON.parse(arr);
 
   tallyArray.forEach(({ ldap, 'assignedCases':count }) => {
+    if(!ldap) return
     const LDAPRowData = _doFindLDAPPosition(ldap);
     const { rowNumber,rowValues } = JSON.parse(LDAPRowData);
     const [ ,currentMTD,QMMTD,MTD,...rest ] = rowValues;
