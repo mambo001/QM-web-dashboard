@@ -20,17 +20,19 @@ function getMonitoringLogsData() {
   return JSON.stringify(data);
 }
 
-// function getPrioData(){
-//   let data = {};
-//   let array = _readData(QMPrio_tab);
-//   let filteredArray = array.filter(p => p.LDAP != '')
-//   data.prio = filteredArray
-//   console.log(data.prio);
-
-//   return JSON.stringify(data);
-// }
-
 function getPrioData(){
+  let data = {};
+  let array = _readData(QMPrio_tab);
+  let filteredArray = array
+    .filter(p => p.LDAP != '')
+    .sort((a, b) => a.MTD - b.MTD);
+  data.prio = filteredArray
+  console.log(data.prio);
+
+  return JSON.stringify(data);
+}
+
+function getAssignmentPrioData(){
   let data = {};
   let array = _readData(QMPrio_tab);
   let filteredArray = array
@@ -264,7 +266,7 @@ function autoAssignCases(){
   const caseIDArray = unassignedCases.map(e => e['caseIDArray']).flat();
 
   // Prio LDAPs
-  const { 'prio':prioData } = JSON.parse(getPrioData());
+  const { 'prio':prioData } = JSON.parse(getAssignmentPrioData());
   const prioArray = prioData.map(e => e['LDAP']);
   const prioLDAP = [
           prioArray,

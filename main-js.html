@@ -35,112 +35,10 @@
         console.log('event',prioTable)
         prioTable.greet()
         prioTable.prio = prioList
-      },
-      swalTest: function() {
-        Swal.fire({
-          title: 'Go get something',
-          showCancelButton: true,
-          confirmButtonText: 'Look up',
-          showLoaderOnConfirm: true,
-          preConfirm: (login) => {
-            return serverFunctions
-                .getUnprocessedCases()
-                .then(data => {
-                    const { unassignedCases } = JSON.parse(data);
-                    this.unassignedCasesList = unassignedCases
-                    console.log(data, unassignedCases)
-                    
-                    return unassignedCases
-                })
-                .catch(error => {
-                    Swal.showValidationMessage(
-                      `Request failed: ${error}`
-                    )
-                })
-          },
-          allowOutsideClick: () => !Swal.isLoading()
-        })
-        .then(({ 'value':assignedCases }) => {
-          if (!assignedCases.length) Swal.fire(
-            {icon: 'error', title: 'No assigned cases found'}
-          )
-          console.log(assignedCases)
-          const parsedAssignedCases = JSON.stringify(assignedCases)
-          const caseIDArray = assignedCases
-            .map(e => e["caseIDArray"]).flat();
-          const parsedCaseIDs = JSON.stringify(caseIDArray)
-          console.log(caseIDArray)
-
-          Swal.fire({
-            title: 'All done!',
-            html: `
-              Assigned cases:
-              <ul class="collection">
-                ${assignedCases
-                .map(c => {
-                  return `
-                    <li class="collection-item">
-                    ${c.ldap} : ${c.assignedCases}
-                    </li>
-                  `
-                })
-                .join('')}
-              </ul>
-            `,
-            confirmButtonText: 'Undo Assignment!',
-            showLoaderOnConfirm: true,
-            allowOutsideClick: () => !Swal.isLoading(),
-            preConfirm: () => {
-              serverFunctions
-                .doDeductPrio(parsedAssignedCases)
-                .then(response => {
-                  let { message,operationCode,newValue } = JSON.parse(response);
-                  console.log(message,operationCode,newValue)
-                })
-                .catch(error => {
-                  console.log('ERROR',error)
-                  Swal.showValidationMessage(
-                    `Request failed: ${error}`
-                  )
-                })
-
-              return serverFunctions
-                .doDeleteLDAPAssignment(parsedCaseIDs)
-                .then(response => {
-                  let { message,operationCode,newValue } = JSON.parse(response);
-                  console.log(message,operationCode,newValue)
-
-                  if (operationCode == 202){
-                    return serverFunctions
-                      .autoAssignCases()
-                      .then(response => {
-                        let { message,operationCode,newValue } = JSON.parse(response);
-                        console.log(message,operationCode,newValue)
-                        operationCode == 202 ? Swal.fire({icon: 'success', title: message}) : ''
-                      })
-                  }
-                })
-                .catch(error => {
-                  console.log('ERROR',error)
-                  Swal.showValidationMessage(
-                    `Request failed: ${error}`
-                  )
-                })
-            }
-          })
-        })
-        // .then((response) => {
-        //   if (!response.length) Swal.fire({
-        //     icon: 'error', 
-        //     title: 'No assigned cases found'
-        //   })
-        //   console.log(JSON.stringify(response))
-        // })
       }
     },
     created() {
       console.log('test')
-      this.swalTest()
     }
   })
 
@@ -254,6 +152,107 @@
         console.log('clicked:',event.target)
         console.log(prioTable, prioTable.prio)
         prioTable.toggleShit()
+      },
+      doReshuffle: function() {
+        Swal.fire({
+          title: 'Go get something',
+          showCancelButton: true,
+          confirmButtonText: 'Look up',
+          showLoaderOnConfirm: true,
+          preConfirm: (login) => {
+            return serverFunctions
+                .getUnprocessedCases()
+                .then(data => {
+                    const { unassignedCases } = JSON.parse(data);
+                    this.unassignedCasesList = unassignedCases
+                    console.log(data, unassignedCases)
+                    
+                    return unassignedCases
+                })
+                .catch(error => {
+                    Swal.showValidationMessage(
+                      `Request failed: ${error}`
+                    )
+                })
+          },
+          allowOutsideClick: () => !Swal.isLoading()
+        })
+        .then(({ 'value':assignedCases }) => {
+          if (!assignedCases.length) Swal.fire(
+            {icon: 'error', title: 'No assigned cases found'}
+          )
+          console.log(assignedCases)
+          const parsedAssignedCases = JSON.stringify(assignedCases)
+          const caseIDArray = assignedCases
+            .map(e => e["caseIDArray"]).flat();
+          const parsedCaseIDs = JSON.stringify(caseIDArray)
+          console.log(caseIDArray)
+
+          Swal.fire({
+            title: 'All done!',
+            html: `
+              Assigned cases:
+              <ul class="collection">
+                ${assignedCases
+                .map(c => {
+                  return `
+                    <li class="collection-item">
+                    ${c.ldap} : ${c.assignedCases}
+                    </li>
+                  `
+                })
+                .join('')}
+              </ul>
+            `,
+            confirmButtonText: 'Undo Assignment!',
+            showLoaderOnConfirm: true,
+            allowOutsideClick: () => !Swal.isLoading(),
+            preConfirm: () => {
+              serverFunctions
+                .doDeductPrio(parsedAssignedCases)
+                .then(response => {
+                  let { message,operationCode,newValue } = JSON.parse(response);
+                  console.log(message,operationCode,newValue)
+                })
+                .catch(error => {
+                  console.log('ERROR',error)
+                  Swal.showValidationMessage(
+                    `Request failed: ${error}`
+                  )
+                })
+
+              return serverFunctions
+                .doDeleteLDAPAssignment(parsedCaseIDs)
+                .then(response => {
+                  let { message,operationCode,newValue } = JSON.parse(response);
+                  console.log(message,operationCode,newValue)
+
+                  if (operationCode == 202){
+                    return serverFunctions
+                      .autoAssignCases()
+                      .then(response => {
+                        let { message,operationCode,newValue } = JSON.parse(response);
+                        console.log(message,operationCode,newValue)
+                        operationCode == 202 ? Swal.fire({icon: 'success', title: message}) : ''
+                      })
+                  }
+                })
+                .catch(error => {
+                  console.log('ERROR',error)
+                  Swal.showValidationMessage(
+                    `Request failed: ${error}`
+                  )
+                })
+            }
+          })
+        })
+        // .then((response) => {
+        //   if (!response.length) Swal.fire({
+        //     icon: 'error', 
+        //     title: 'No assigned cases found'
+        //   })
+        //   console.log(JSON.stringify(response))
+        // })
       }
     }
   });
@@ -330,7 +329,7 @@
         google.script.run
         .withSuccessHandler(data => {
           console.log(data)
-          button.classList.remove('disabled');
+          // button.classList.remove('disabled');
           M.toast({html: 'Successfully updated!'})
         })
         .doUpdateStatus(JSON.stringify({

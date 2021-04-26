@@ -9,7 +9,7 @@
         </a>
         <a id="anotherShit"
           class="btn waves-light waves-effect" 
-          @click="greet"
+          @click="doReshuffle"
           >Reshuffle Prio
         </a>
       <div>
@@ -40,6 +40,7 @@
             <div class="valign-center" v-else-if="index == 5">
               <button 
                 class="btn blue waves-effect waves-light tooltipped"
+                v-bind:class="[k == 'CASES' ? 'disabled' : '']"
                 data-position="top" 
                 data-tooltip="CASES"
                 data-action="CASES"
@@ -50,6 +51,7 @@
               </button>
               <button 
                 class="btn blue darken-4 waves-effect waves-light tooltipped"
+                v-bind:class="[k == 'SKIP' ? 'disabled' : '']"
                 data-position="top" 
                 data-tooltip="SKIP"
                 data-action="SKIP"
