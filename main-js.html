@@ -66,6 +66,10 @@
           )
           console.log(assignedCases)
           const parsedAssignedCases = JSON.stringify(assignedCases)
+          const caseIDArray = assignedCases
+            .map(e => e["caseIDArray"]).flat();
+          const parsedCaseIDs = JSON.stringify(caseIDArray)
+          console.log(caseIDArray)
 
           Swal.fire({
             title: 'All done!',
@@ -87,11 +91,34 @@
             showLoaderOnConfirm: true,
             allowOutsideClick: () => !Swal.isLoading(),
             preConfirm: () => {
-              return serverFunctions
+              serverFunctions
                 .doDeductPrio(parsedAssignedCases)
                 .then(response => {
                   let { message,operationCode,newValue } = JSON.parse(response);
                   console.log(message,operationCode,newValue)
+                })
+                .catch(error => {
+                  console.log('ERROR',error)
+                  Swal.showValidationMessage(
+                    `Request failed: ${error}`
+                  )
+                })
+
+              return serverFunctions
+                .doDeleteLDAPAssignment(parsedCaseIDs)
+                .then(response => {
+                  let { message,operationCode,newValue } = JSON.parse(response);
+                  console.log(message,operationCode,newValue)
+
+                  if (operationCode == 202){
+                    return serverFunctions
+                      .autoAssignCases()
+                      .then(response => {
+                        let { message,operationCode,newValue } = JSON.parse(response);
+                        console.log(message,operationCode,newValue)
+                        operationCode == 202 ? Swal.fire({icon: 'success', title: message}) : ''
+                      })
+                  }
                 })
                 .catch(error => {
                   console.log('ERROR',error)

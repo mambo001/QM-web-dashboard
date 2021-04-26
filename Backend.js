@@ -20,12 +20,30 @@ function getMonitoringLogsData() {
   return JSON.stringify(data);
 }
 
+// function getPrioData(){
+//   let data = {};
+//   let array = _readData(QMPrio_tab);
+//   let filteredArray = array.filter(p => p.LDAP != '')
+//   data.prio = filteredArray
+//   console.log(data.prio);
+
+//   return JSON.stringify(data);
+// }
+
 function getPrioData(){
   let data = {};
   let array = _readData(QMPrio_tab);
-  let filteredArray = array.filter(p => p.LDAP != '')
+  let filteredArray = array
+    .filter(({ LDAP, 'Override Status':overrideStatus, 'Status':originalStatus }) => {
+      if (overrideStatus == 'CASES') return LDAP
+      if (overrideStatus == '') {
+        if (originalStatus == 'CASES' || originalStatus == 'AVAIL') return LDAP
+      }
+      
+    })
+    .sort((a, b) => a.MTD - b.MTD);
   data.prio = filteredArray
-  console.log(data.prio);
+  // console.log(data.prio);
 
   return JSON.stringify(data);
 }
@@ -54,16 +72,22 @@ function getUnprocessedCases(){
   const result = uniqueResult(filteredArray
     .map(c => ({
       ldap: c["Assigned To"],
+      caseIDArray: filteredArray
+        .filter(d => d["Assigned To"] === c["Assigned To"])
+          .map(({ 'Case ID':caseID }) => caseID)
+          .flat(),
       assignedCases: filteredArray
         .filter(d => d["Assigned To"] === c["Assigned To"])
         .length
     })
   ));
 
+  console.log(result)
+
   data.unassignedCases = result
 
   // console.log(array.length, recentCasesArray.length, data.cases.length)
-  console.log(data);
+  // console.log(data);
 
   return JSON.stringify(data);
 }
@@ -183,6 +207,146 @@ function doDeductPrio(arr) {
     operationCode: 202
   })
 }
+
+function doAddPrio(arr) {
+  // PROD
+  if (!arr.length) return
+  console.log(arr)
+  const tallyArray = JSON.parse(arr);
+
+  tallyArray.forEach(({ ldap, 'assignedCases':count }) => {
+    if(!ldap) return
+    const LDAPRowData = _doFindLDAPPosition(ldap);
+    const { rowNumber,rowValues } = JSON.parse(LDAPRowData);
+    const [ ,currentMTD,QMMTD,MTD,...rest ] = rowValues;
+    const sumValues = (currentValue, newValue) => (currentValue + newValue);
+    const finalValue = sumValues(QMMTD, count);
+
+    // Edit operation
+    QMPrio_tab.getRange(rowNumber, 3, 1, 1).setValue(finalValue)
+  });
+
+  // Value changed checker
+  // updatedCount = QMPrio_tab.getRange("A2:G").getValues();
+  // console.log(updatedCount);
+
+  return JSON.stringify({
+    message: 'Updated sucessfully',
+    operationCode: 202
+  })
+}
+
+function doDeleteLDAPAssignment(arr) {
+  // PROD
+  if (!JSON.parse(arr).length) return
+  console.log(arr)
+  const caseIDArray = JSON.parse(arr);
+  
+  // Testing
+  // const caseIDArray = ['1-6473000031421','9-1354000031395','6-3845000030848'];
+
+  caseIDArray.forEach(e => {
+    let rowNumber = _doFindCaseIDPosition(e);
+
+    // Clear LDAP cell value
+    MONITOR_LOGS_TAB.getRange(rowNumber, 5, 1, 1).setValue('');
+  })
+
+  return JSON.stringify({
+    message: 'Updated sucessfully',
+    operationCode: 202
+  })
+}
+
+function autoAssignCases(){
+  // Unassigned Cases
+  const { unassignedCases } = JSON.parse(getUnprocessedCases());
+  const caseIDArray = unassignedCases.map(e => e['caseIDArray']).flat();
+
+  // Prio LDAPs
+  const { 'prio':prioData } = JSON.parse(getPrioData());
+  const prioArray = prioData.map(e => e['LDAP']);
+  const prioLDAP = [
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray,
+          prioArray
+      ].flat()
+
+  // Case Assignment
+  // caseIDArray -> prioLDAP
+  const doAssign = (casesArray, prioArray) => {
+    // console.log(casesArray)
+    // console.log(prioArray)
+    let assignedCases = casesArray.map((c, index) => {
+      return {
+        caseID: c,
+        ldap: prioArray[index]
+      }
+    })
+
+    return assignedCases;
+  }
+
+  // Setting assigned LDAP in SPR
+  const newAssignmentArray = doAssign(caseIDArray, prioLDAP);
+  newAssignmentArray.forEach(({caseID, ldap}) => {
+    let rowNumber = _doFindCaseIDPosition(caseID);
+
+    MONITOR_LOGS_TAB.getRange(rowNumber, 5, 1, 1).setValue(ldap);
+  })
+  console.log(newAssignmentArray)
+
+  // Setting QM MTD
+  // newAssignmentArray
+  const uniqueResult = arr => {
+    const seen = {}
+      let out = []
+      for (let v of arr) {
+        if (!seen[v["ldap"]]) {
+          seen[v["ldap"]] = true
+          out.push(v)
+        }
+      }
+    return out
+  }
+
+  const newAssignmentCount = uniqueResult(newAssignmentArray
+    .map(c => {
+      return {
+        ldap: c["ldap"],
+        assignedCases: newAssignmentArray
+          .filter(d => d["ldap"] === c["ldap"])
+          .length
+      }
+    })
+  )
+
+  console.log(newAssignmentCount)
+
+  doAddPrio(JSON.stringify(newAssignmentCount));
+
+  return JSON.stringify({
+    message: 'Assigned sucessfully',
+    operationCode: 202
+  })
+
+}
+
+
 
 
 
