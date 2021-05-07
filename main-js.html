@@ -71,7 +71,8 @@
         google.script.run.withSuccessHandler(data => {
           let parsedCases = JSON.parse(data).cases
 
-          caseList = parsedCases.reverse()
+          // caseList = parsedCases.reverse()
+          caseList = parsedCases
           caseHeaderList = Object.keys(caseList[0])
 
           // console.log(caseList.length,caseHeaderList)
