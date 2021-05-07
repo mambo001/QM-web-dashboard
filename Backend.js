@@ -1,10 +1,15 @@
 // SPR DUMP
 // Testing
 // const SPR_DUMP = SpreadsheetApp.openById("1D0sp2Ay6fBqqGu5HTwRmhAVtJJy7dUQ0nUrYxIZDcXU");
-// SPR v2
-const SPR_DUMP = SpreadsheetApp.openById("17gZg4NvVTcpQTHf1GcC5CoGsVYzzge5Bldk89V7Gxsc");
+// // Production
+const SPR_DUMP = SpreadsheetApp.openById("1k2jLrOAeCG3vvCxX1xm205fztiXoAEuFuqPDGJk3Ln4");
+
+// SPR DUMP
+// Testing
+// const SPR_DUMP = SpreadsheetApp.openById("17gZg4NvVTcpQTHf1GcC5CoGsVYzzge5Bldk89V7Gxsc");
 // // Production
 // const SPR_DUMP = SpreadsheetApp.openById("1k2jLrOAeCG3vvCxX1xm205fztiXoAEuFuqPDGJk3Ln4");
+
 // Tab Name
 const MONITOR_LOGS_TAB = SPR_DUMP.getSheetByName("Monitor Logs");
 
@@ -12,6 +17,10 @@ const MONITOR_LOGS_TAB = SPR_DUMP.getSheetByName("Monitor Logs");
 const QM_Dump = SpreadsheetApp.openById("12OdxpPwNiu_XJOSuRqk_QJpYFOgEfN9EEuxYPfQWDmI");
 const SPR_tab = QM_Dump.getSheetByName("SPR-AR");
 const QMPrio_tab = QM_Dump.getSheetByName("QM - Prio");
+
+// Legacy Prio Dump
+const Night_Prio_Dump = SpreadsheetApp.openById("1XplIx0MrFHD0mo2AIcOxfi7q-LNtHU-E8vWXsaX6Tms");
+const Prio_April_tab = Night_Prio_Dump.getSheetByName("Prio APRIL 2021");
 
 function getMonitoringLogsData() {
   let data = {};
@@ -55,7 +64,8 @@ function getAssignmentPrioData(){
 function getUnprocessedCases(){
   const cutOffLastFive = (array) => {
     const [...rest] = array;
-    return rest.slice(-30);
+    // return rest.slice(-30);
+    return rest.slice(0,30);
   }
   const uniqueResult = arr => {
     const seen = {}
@@ -182,6 +192,13 @@ function doUpdateCaseState(req){
     status: true,
     message: result
   });
+}
+
+function doFakeTally(){
+  // Night_Prio_Dump
+  // Prio_April_tab
+  let April_Tab_Values = Prio_April_tab.getRange("TM5:UE22").getValues();
+  console.log(April_Tab_Values)
 }
 
 function doDeductPrio(arr) {

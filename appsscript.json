@@ -1,10 +1,9 @@
 {
-  "timeZone": "Asia/Hong_Kong",
-  "dependencies": {
-  },
+  "timeZone": "Asia/Manila",
+  "dependencies": {},
   "webapp": {
-    "access": "DOMAIN",
-    "executeAs": "USER_ACCESSING"
+    "executeAs": "USER_ACCESSING",
+    "access": "DOMAIN"
   },
   "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8"
