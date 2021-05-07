@@ -15,7 +15,10 @@ function doGet(e) {
       var htmlTemplate = HtmlService.createTemplateFromFile('index');
     
     var htmlOutput = htmlTemplate.evaluate()
-    .setSandboxMode(HtmlService.SandboxMode.IFRAME).setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    .setSandboxMode(HtmlService.SandboxMode.IFRAME)
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .setFaviconUrl("https://i.imgur.com/misqTMk.png")
+    .setTitle('QM Dashboard');;
     
     // appendDataToHtmlOutput modifies the html and returns the same htmlOutput object
     return htmlOutput;
