@@ -56,7 +56,7 @@ function getAssignmentPrioData(){
     })
     .sort((a, b) => a.MTD - b.MTD);
   data.prio = filteredArray
-  // console.log(data.prio);
+  console.log({filteredArray});
 
   return JSON.stringify(data);
 }

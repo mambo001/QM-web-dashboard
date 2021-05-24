@@ -28,7 +28,8 @@
     el: '#example-2',
     data: {
       name: 'Vue.js',
-      unassignedCasesList: []
+      unassignedCasesList: [],
+      isHidden: true
     },
     methods: {
       greet: function (event) {
@@ -147,7 +148,7 @@
   });
 
   let reshuffleButton = new Vue({
-    el: '#anotherShit',
+    el: '#reshuffleButton',
     methods: {
       greet: function(event) {
         console.log('clicked:',event.target)
@@ -319,10 +320,16 @@
       changeStatus: function(e) {
         let requestObject;
         const button = e.currentTarget;
-        const action = e.currentTarget.dataset.action;
-        const id = e.currentTarget.dataset.rowid;
+        const allButtons = button.parentElement.querySelectorAll('button');
+        let { action,'rowid':id } = button.dataset;
+        action = action !== 'CLEAR' ? action : '';
+        // const action = button.dataset.action;
+        // const id = button.dataset.rowid;
         
         console.log(button,action,id)
+
+        // Toggle other buttons
+        allButtons.forEach(button => button.classList.remove('disabled'))
 
         // Toggle button onclick
         button.classList.add('disabled');
@@ -330,7 +337,6 @@
         google.script.run
         .withSuccessHandler(data => {
           console.log(data)
-          // button.classList.remove('disabled');
           M.toast({html: 'Successfully updated!'})
         })
         .doUpdateStatus(JSON.stringify({
@@ -399,6 +405,10 @@
     methods: {
       updateDisplay: function() {
         this.dateObject = new Date().toLocaleTimeString()
+      },
+      showStatusButtons: function() {
+        prioTable.isActive = !prioTable.isActive
+        console.log('status button clicked!', prioTable.isActive)
       }
     }
   });
