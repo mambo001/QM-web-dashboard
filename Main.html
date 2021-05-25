@@ -2,16 +2,26 @@
   <div class="col s12 l8" >
     <table class="striped highlight centered" id="prioTable">
       <div class="">
-        <a id="someShit"
-          class="btn waves-light waves-effect" 
-          @click="greet"
-          >Filter
-        </a>
-        <a id="reshuffleButton"
-          class="btn waves-light waves-effect" 
-          @click="doReshuffle"
-          >Reshuffle Prio
-        </a>
+        <div class="input-field col s6">
+          <a id="filterStatusBtn"
+            class="btn waves-light waves-effect" 
+            @click="greet"
+            >Filter
+          </a>
+          <a id="reshuffleButton"
+            class="btn waves-light waves-effect" 
+            @click="doReshuffle"
+            >Reshuffle Prio
+          </a>
+        </div>
+        <div class="input-field col s6">
+          <select id="prioDurationSelect" @change="intervalChanged">
+            <option value="short">Short</option>
+            <option value="regular">Regular</option>
+            <option value="long" selected>Long</option>
+          </select>
+          <label>Prio Reload Interval</label>
+        </div>
       <div>
       <thead>
         <tr>

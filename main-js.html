@@ -11,6 +11,12 @@
   let prioList = [];
   let filteredPrioList = [];
   let prioHeaderList = [];
+  
+  const durationTypes = {
+    short: 20000,
+    regular: 40000,
+    long: 60000
+  }
 
   const { serverFunctions } = new Server();
 
@@ -137,7 +143,7 @@
   });
 
   let filterButtons = new Vue({
-    el: '#someShit',
+    el: '#filterStatusBtn',
     methods: {
       greet: function(event) {
         console.log('clicked:',event.target)
@@ -248,13 +254,22 @@
             }
           })
         })
-        // .then((response) => {
-        //   if (!response.length) Swal.fire({
-        //     icon: 'error', 
-        //     title: 'No assigned cases found'
-        //   })
-        //   console.log(JSON.stringify(response))
-        // })
+      }
+    }
+  });
+
+  //prioUpdateSelect
+  let prioDurationSelect = new Vue({
+    el: '#prioDurationSelect',
+    methods: {
+      intervalChanged: function(event) {
+        const { 'target':elem } = event;
+        const selectedValue = elem.options[elem.selectedIndex].value;        
+        if (durationTypes.hasOwnProperty(selectedValue)) {
+          prioTable.refreshInterval = durationTypes[selectedValue]
+          clearInterval(prioTable.intervalID)
+          prioTable.recurringRender()
+        }
       }
     }
   });
@@ -270,7 +285,8 @@
       highlightedElements: [6],
       optionalElements: [0,1,7,8,9],
       intervalID: '',
-      isHidden: true
+      isHidden: true,
+      refreshInterval: 60000
     },
     mounted() {
       this.renderTableData()
@@ -296,15 +312,12 @@
           this.filteredPrio = this.isHidden ? filteredPrioList : prioList
           this.prioHeader = prioHeaderList
           lastUpdatedDate.updateDisplay()
-
-          // console.log(this.filteredPrio.length,this.filteredPrio)
-          
           this.initializeMaterialElements()
 
         }).getPrioData()
       },
       recurringRender: function() {
-        this.intervalID = setInterval(this.renderTableData, 20000)
+        this.intervalID = setInterval(this.renderTableData, this.refreshInterval)
       },
       toggleShit: function() {
         this.isHidden = !this.isHidden
@@ -348,6 +361,9 @@
     watch: {
       isHidden: function(val) {
         val ? this.filteredPrio = filteredPrioList : this.filteredPrio = prioList
+      },
+      refreshInterval: function(val) {
+        val ? this.refreshInterval = this.refreshInterval : console.log('not changed:',this.refreshInterval)
       }
     }
   });
