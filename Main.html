@@ -2,19 +2,89 @@
   <div class="col s12 l8" >
     <table class="striped highlight centered" id="prioTable">
       <div class="">
-        <div class="input-field col s6">
-          <a id="filterStatusBtn"
+        <div class="input-field col s8">
+          <button id="filterStatusBtn"
             class="btn waves-light waves-effect" 
             @click="greet"
             >Filter
-          </a>
-          <a id="reshuffleButton"
+          </button>
+          <button id="reshuffleButton"
             class="btn waves-light waves-effect" 
             @click="doReshuffle"
             >Reshuffle Prio
-          </a>
+          </button>
+          <button id="prioConfigBtn"
+            class="btn waves-light waves-effect modal-trigger" 
+            @click="togglePrioConfig"
+            data-target="prioConfigModal"
+            >Prio Configuration
+          </button>
+
+          <!-- Modal Structure -->
+          <div id="prioConfigModal" class="modal">
+            <div class="modal-content row">
+              <div class="col6">
+                <div class="card">
+                  <div class="card-content">
+
+                    <h4 class="center-align">Auto Skip</h4>
+
+                    <div class="row">
+
+                      <div class="input-field col s12">
+                        <textarea id="ldapTextarea" class="materialize-textarea" placeholder="Ex: johndoe"></textarea>
+                        <label for="ldapTextarea" class="active">LDAP(s)</label>
+                      </div>
+
+                      <div class="input-field col s6">
+                        <input 
+                        type="text" 
+                        id="skipTimepicker" 
+                        class="timepicker" 
+                        placeholder="Ex: 4:00"
+                        @input="changedTime"
+                        @click="pickerClicked"
+                        >
+                        <label for="skipTimepicker" class="active">Skip Schedule</label>
+                      </div>
+                      <div class="input-field col s6">
+                        <input disabled value="00:00" id="skippedInput" type="text" class="validate">
+                        <label for="skippedInput" class="active">Skipped Time</label>
+                      </div>
+
+                      <div class="input-field col s12">
+                        <select multiple id="skipMultipleSelect">
+                          <option value="" disabled>Choose your option</option>
+                          <option value="Morning">Morning</option>
+                          <option value="Mid">Mid</option>
+                          <option value="Night">Night</option>
+                        </select>
+                        <label>By Shift</label>
+                      </div>
+
+                    </div>
+                  </div>
+                  <div class="card-action">
+                    <a class="waves-effect waves-light blue darken-1 btn" style="width: 100%; display: flex; justify-content: center;"><i class="material-icons left">send</i>Submit</a>
+                  </div>
+                </div>
+              </div>
+              <div class="col6">
+                <div class="card">
+                  <ul class="collection with-header">
+                    <li class="collection-header"><h4>Skipped List</h4></li>
+                    <li class="collection-item"><div>Alvin<a href="#!" class="secondary-content"><i class="red-text material-icons">delete</i></a></div></li>
+                    <li class="collection-item"><div>Alvin<a href="#!" class="secondary-content"><i class="red-text material-icons">delete</i></a></div></li>
+                    <li class="collection-item"><div>Alvin<a href="#!" class="secondary-content"><i class="red-text material-icons">delete</i></a></div></li>
+                    <li class="collection-item"><div>Alvin<a href="#!" class="secondary-content"><i class="red-text material-icons">delete</i></a></div></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          
         </div>
-        <div class="input-field col s6">
+        <div class="input-field col s4">
           <select id="prioDurationSelect" @change="intervalChanged">
             <option value="short">Short</option>
             <option value="regular">Regular</option>

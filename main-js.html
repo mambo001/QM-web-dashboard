@@ -273,6 +273,46 @@
       }
     }
   });
+
+  // prioConfigBtn
+  let prioConfigBtn = new Vue({
+    el: '#prioConfigBtn',
+    created: function() {
+      // Initialize Materialize Modals
+      const modalElems = document.querySelectorAll('.modal');
+      const modalInstances = M.Modal.init(modalElems, {});
+    },
+    methods: {
+      togglePrioConfig: function(event) {
+        console.log(event.currentTarget)
+      }
+    }
+  });
+  const skipTimepicker = new Vue({
+    el: '#skipTimepicker',
+    data: {
+
+    },
+    created: function() {
+      // Initialize Time Picker
+      const timepickerElem = document.querySelector('#skipTimepicker');
+      const timepickerInstance = M.Timepicker.init(timepickerElem, {});
+
+      timepickerElem.addEventListener('click', (e) => {
+        timepickerInstance.open()
+      })
+    },
+    methods: {
+      changedTime: function(event) {
+        console.log(event.currentTarget)
+      },
+      pickerClicked: function(e) {
+        const { 'target':elem } = e;
+        const instance = M.Timepicker.getInstance(elem);
+        instance.open()
+      }
+    }
+  });
   
 
   // prioTable
