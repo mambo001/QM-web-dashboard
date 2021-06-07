@@ -148,9 +148,9 @@ function _doFindCaseIDPosition(id){
   return rowNumber;
 }
 
-function _doFindLDAPPosition(id){
-  // id = 'reubenmark'
-  let searchKeyword = id;
+function doFindLDAPPosition(ldap){
+  // ldap = 'reubenmark'
+  let searchKeyword = ldap;
   let QMPrioData = QMPrio_tab
       .getRange("A2:G")
       .getValues();
@@ -209,7 +209,7 @@ function doDeductPrio(arr) {
 
   tallyArray.forEach(({ ldap, 'assignedCases':count }) => {
     if(!ldap) return
-    const LDAPRowData = _doFindLDAPPosition(ldap);
+    const LDAPRowData = doFindLDAPPosition(ldap);
     const { rowNumber,rowValues } = JSON.parse(LDAPRowData);
     const [ ,currentMTD,QMMTD,MTD,...rest ] = rowValues;
     const subtractValues = (currentValue, newValue) => (currentValue - newValue);
@@ -237,7 +237,7 @@ function doAddPrio(arr) {
 
   tallyArray.forEach(({ ldap, 'assignedCases':count }) => {
     if(!ldap) return
-    const LDAPRowData = _doFindLDAPPosition(ldap);
+    const LDAPRowData = doFindLDAPPosition(ldap);
     const { rowNumber,rowValues } = JSON.parse(LDAPRowData);
     const [ ,currentMTD,QMMTD,MTD,...rest ] = rowValues;
     const sumValues = (currentValue, newValue) => (currentValue + newValue);

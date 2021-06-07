@@ -284,35 +284,185 @@
     },
     methods: {
       togglePrioConfig: function(event) {
-        console.log(event.currentTarget)
+        // console.log(event.currentTarget)
       }
     }
   });
   const skipTimepicker = new Vue({
     el: '#skipTimepicker',
-    data: {
-
-    },
-    created: function() {
+    mounted: function() {
       // Initialize Time Picker
       const timepickerElem = document.querySelector('#skipTimepicker');
-      const timepickerInstance = M.Timepicker.init(timepickerElem, {});
-
-      timepickerElem.addEventListener('click', (e) => {
-        timepickerInstance.open()
-      })
+      const timepickerInstance = M.Timepicker.init(timepickerElem, {
+        twelveHour: false
+      });
     },
     methods: {
       changedTime: function(event) {
-        console.log(event.currentTarget)
-      },
-      pickerClicked: function(e) {
-        const { 'target':elem } = e;
-        const instance = M.Timepicker.getInstance(elem);
-        instance.open()
+        const { currentTarget } = event;
+        const instance = M.Timepicker.getInstance(currentTarget);
+        skippedInput.skippedComputedValue = event.currentTarget.value
       }
     }
   });
+
+  const skippedInput = new Vue({
+    el: '#skippedInput',
+    data: {
+      skippedComputedValue: ''
+    },
+    mounted: function() {
+    },
+    methods: {
+    },
+    computed: {
+      deductedSkippedTime: function(e) {
+        const [ time, multiplier ] = this.skippedComputedValue.split(' ');
+        const [ hours, minutes ] = time.split(':')
+        const timeSubtractor = (h,m) => {
+          const parsedHour = parseInt(h);
+          const parsedMin = parseInt(m);
+          const calculated = ( ( ( (parsedHour * 60) + parsedMin) - 5) / 60);
+          const hour = Math.floor(calculated)
+          const min = Math.floor(Math.round((calculated % 1) * 60))
+          console.log({calculated},{hour},{min})
+          return `${hour}:${min}`
+        }
+
+        return timeSubtractor(hours,minutes)      
+      }
+    }
+  })
+
+  const ldapTextarea = new Vue({
+    el: '#ldapTextarea',
+    data: {
+      textAreaValues: this.value
+    }
+  })
+
+  const autoskipSubmitBtn = new Vue({
+    el: '#autoskipSubmitBtn',
+    data: {},
+    methods: {
+      doSkip: async function(e) {
+        const { textAreaValues } = ldapTextarea;
+        const { selectedValues, updateStatusByShift } = skipMultipleSelect;
+        
+        if(selectedValues.length != 0){
+          await updateStatusByShift(selectedValues)
+        } else {
+          // await 
+        }
+
+        this.doClearValues()
+      },
+      doClearValues: function() {
+        console.log('CLEARING SHIT!')
+        ldapTextarea.textAreaValues = ""
+        M.FormSelect.init(skipMultipleSelect,{})
+        console.log(ldapTextarea.textAreaValues, skipMultipleSelect.selectedIndex)
+      }
+    }
+  })
+
+  const skipMultipleSelect = new Vue({
+    el: '#skipMultipleSelect',
+    data: {
+      selectedValues: ''
+    },
+    mounted: function() {
+    },
+    methods: {
+      selectedValueChanged: function(e) {
+        const instance = M.FormSelect.getInstance(e.currentTarget);
+        const shifts = instance.getSelectedValues()
+
+        this.selectedValues = shifts;
+
+        console.log({shifts})
+      },
+      updateStatusByShift: async function(shiftArray) {
+        if (!shiftArray.length) return
+
+        const { prio } = await this.getPrioData();
+
+        const filteredPrioData = prio.filter(({ LDAP,Shift }) => {
+          return shiftArray.includes(Shift)
+        });
+        const filteredLDAP = filteredPrioData.map(({ LDAP }) => LDAP);
+        
+        ldapTextarea.textAreaValues = filteredLDAP.toString();
+        // Updates all ldaps by shift
+        filteredLDAP.forEach(ldap => {
+          let request = {
+            id: ldap,
+            action: 'SKIP'
+          }
+          this.updateStatus(JSON.stringify(request))
+        })
+        
+        
+        console.log({filteredPrioData})
+          
+      },
+      updateStatus: function(requestObject) {
+        if (!requestObject && JSON.parse(requestObject).length == 0) return
+        return serverFunctions
+          .doUpdateStatus(requestObject)
+          .then(data => console.log(JSON.parse(data)))
+          .catch(error => {
+              console.log('Error:',error)
+              Swal.showValidationMessage(
+                `Request failed: ${error}`
+              )
+          })
+      },
+      getPrioData: function() {
+        return serverFunctions
+          .getPrioData()
+          .then(data => JSON.parse(data))
+          .catch(error => {
+              console.log('Error:',error)
+              Swal.showValidationMessage(
+                `Request failed: ${error}`
+              )
+          })
+      },
+      getLDAPIndex: function(LDAP) {
+        return serverFunctions
+          .doFindLDAPPosition(LDAP)
+          .then(data => {
+            const { rowNumber } = JSON.parse(data);
+            return rowNumber
+          })
+          .catch(error => {
+              console.log('Error:',error)
+              Swal.showValidationMessage(
+                `Request failed: ${error}`
+              )
+          })
+      }
+
+    },
+    computed: {
+      deductedSkippedTime: function(e) {
+        const [ time, multiplier ] = this.skippedComputedValue.split(' ');
+        const [ hours, minutes ] = time.split(':')
+        const timeSubtractor = (h,m) => {
+          const parsedHour = parseInt(h);
+          const parsedMin = parseInt(m);
+          const calculated = ( ( ( (parsedHour * 60) + parsedMin) - 5) / 60);
+          const hour = Math.floor(calculated)
+          const min = Math.floor(Math.round((calculated % 1) * 60))
+          console.log({calculated},{hour},{min})
+          return `${hour}:${min}`
+        }
+
+        return timeSubtractor(hours,minutes)      
+      }
+    }
+  })
   
 
   // prioTable
@@ -387,15 +537,18 @@
         // Toggle button onclick
         button.classList.add('disabled');
 
-        google.script.run
-        .withSuccessHandler(data => {
-          console.log(data)
-          M.toast({html: 'Successfully updated!'})
-        })
-        .doUpdateStatus(JSON.stringify({
-          id,
-          action
-        }));
+        return serverFunctions
+          .doUpdateStatus(JSON.stringify({ id, action }))
+          .then(data => {
+            console.log(data)
+            M.toast({html: 'Successfully updated!'})
+          })
+          .catch(error => {
+              Swal.showValidationMessage(
+                `Request failed: ${error}`
+              )
+          })
+
       }
     },
     watch: {
