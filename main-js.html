@@ -473,7 +473,7 @@
       filteredPrio: [],
       prioHeader: [],
       highlightedElements: [6],
-      optionalElements: [0,1,7,8,9],
+      optionalElements: [2],
       intervalID: '',
       isHidden: true,
       refreshInterval: 60000
@@ -523,7 +523,7 @@
       changeStatus: function(e) {
         let requestObject;
         const button = e.currentTarget;
-        const allButtons = button.parentElement.querySelectorAll('button');
+        const allButtons = button.parentElement.querySelectorAll('.icon-btn');
         let { action,'rowid':id } = button.dataset;
         action = action !== 'CLEAR' ? action : '';
         // const action = button.dataset.action;
