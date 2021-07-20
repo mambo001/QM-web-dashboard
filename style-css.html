@@ -6,7 +6,7 @@
   
   body {
     padding-bottom: 128px;
-    /* background: #eee; */
+    /* background: #f3f4f6; */
     color: #555555;
   }
 
@@ -82,6 +82,27 @@
 #content table tr td.orange{
     animation: pulse 0.9s;
     /*transition: background .90s ease-in;*/
+}
+
+#prioTable td {
+  padding: 5px 1.5px;
+}
+
+i.icon-btn{
+  cursor: pointer;
+}
+
+i.icon-btn:hover{
+  filter: brightness(1.1);
+}
+
+i.icon-btn:active{
+  filter: brightness(1.4);
+}
+
+i.icon-btn.disabled{
+  cursor: default;
+  filter: grayscale(1);
 }
 
 @keyframes pulse {
