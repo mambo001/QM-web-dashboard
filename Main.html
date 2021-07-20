@@ -1,5 +1,5 @@
 <div class="row">
-  <div class="col s12 l8" >
+  <div class="col s12 l7" >
     <table class="striped highlight centered" id="prioTable">
       <div class="">
         <div class="input-field col s8">
@@ -128,21 +128,27 @@
           </select>
           <label>Prio Reload Interval</label>
         </div>
-      <div>
+      </div>
       <thead>
         <tr>
           <th 
           v-for="(header, index) in prioHeader"
+          :class="{
+            'hide': optionalElements.includes(index)
+          }"
           >
             {{ header }}
           </th>
 
         </tr>
       </thead>
-      <tbody>        
+      <tbody style="font-size: smaller;">        
         <tr v-for="c in filteredPrio" v-bind:id="c.LDAP">
           <td 
           v-for="(k, key, index) in c"
+          :class="{
+            'hide': optionalElements.includes(index)
+          }"
           >
            <i class='material-icons' v-if="index == 6">{{ 
              k == 'Night'
@@ -154,39 +160,28 @@
             </i>
             
             <div class="valign-center" v-else-if="index == 5">
-              <button 
-                class="btn blue waves-effect waves-light tooltipped"
+              <i class="icon-btn blue-text material-icons tooltipped"
                 v-bind:class="[k == 'CASES' ? 'disabled' : '']"
                 data-position="top" 
                 data-tooltip="CASES"
                 data-action="CASES"
                 v-bind:data-rowid="c.LDAP"
-                @click="changeStatus"
-              >
-                <i class="material-icons">event_available</i>
-              </button>
-              <button 
-                class="btn blue darken-4 waves-effect waves-light tooltipped"
+                @click="changeStatus">event_available</i>
+              <i class="icon-btn blue-text text-darken-4 material-icons tooltipped"
                 v-bind:class="[k == 'SKIP' ? 'disabled' : '']"
                 data-position="top" 
                 data-tooltip="SKIP"
                 data-action="SKIP"
                 v-bind:data-rowid="c.LDAP"
-                @click="changeStatus"
-              >
-                <i class="material-icons">event_busy</i>
-              </button>
-              <button 
-                class="btn waves-effect waves-blue tooltipped"
+                @click="changeStatus">event_busy</i>
+              <i class="icon-btn material-icons tooltipped"
                 v-bind:class="[k == '' ? 'disabled' : '']"
                 data-position="top" 
                 data-tooltip="CLEAR"
                 data-action="CLEAR"
                 v-bind:data-rowid="c.LDAP"
-                @click="changeStatus"
-              >
-                <i class="material-icons">clear</i>
-              </button>
+                @click="changeStatus">clear</i>
+
             </div>
            <span v-else>{{ k }}</span>
           </td>
@@ -194,7 +189,7 @@
       </tbody>
     </table>
   </div>
-  <div class="col s12 l4">
+  <div class="col s12 l5">
     <table class="striped highlight centered" id="expiringCasesTable">
       <thead>
         <tr>
