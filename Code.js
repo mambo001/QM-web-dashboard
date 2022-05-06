@@ -1,10 +1,8 @@
 /* Route
  * All Request with Method GET will be process here
  */
-var email = Session.getActiveUser().getEmail();
-var ldap = email.split("@")[0];
-//var ldap = "ldapTest",
-//    email = "emailTest";
+let email = Session.getActiveUser().getEmail();
+let ldap = email.split("@")[0];
 
 function getEmail (){
   return Session.getActiveUser().getEmail();
@@ -20,15 +18,15 @@ function generateGUID() {
 }
 
 function yyyymm() {
-  var now = new Date();
-  var y = now.getFullYear();
-  var m = now.getMonth() + 1;
+  let now = new Date();
+  let y = now.getFullYear();
+  let m = now.getMonth() + 1;
   return '' + y + "-" + (m < 10 ? '0' : '') + m ;
 }
 
 function dateAdd(date, interval, units) {
-  var ret = new Date(date); //don't change original date
-  var checkRollover = function() { if(ret.getDate() != date.getDate()) ret.setDate(0);};
+  let ret = new Date(date); //don't change original date
+  let checkRollover = function() { if(ret.getDate() != date.getDate()) ret.setDate(0);};
   switch(interval.toLowerCase()) {
     case 'year'   :  ret.setFullYear(ret.getFullYear() + units); checkRollover();  break;
     case 'quarter':  ret.setMonth(ret.getMonth() + 3*units); checkRollover();  break;
@@ -45,9 +43,9 @@ function dateAdd(date, interval, units) {
 
 ///////////////////
 function doPost(req){
-  // POST Note
-  // postData, parameters coexist
-  // and usable separately
+  const TAB = "All Cases";
+  const DB = SpreadsheetApp.openById("1vS_Bok6_ugQmwimCdEYe8WiOVstO28bcs8lOXQPc5QE");
+  const ALL_CASES_TAB = DB.getSheetByName(TAB);
   const body = req.postData.contents;
   const bodyJSON = JSON.parse(body);
   let flag = req.parameter.flag || 0;

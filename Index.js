@@ -18,7 +18,7 @@ function doGet(e) {
     .setSandboxMode(HtmlService.SandboxMode.IFRAME)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .setFaviconUrl("https://i.imgur.com/misqTMk.png")
-    .setTitle('QM Dashboard');;
+    .setTitle('QM Dashboard');
     
     // appendDataToHtmlOutput modifies the html and returns the same htmlOutput object
     return htmlOutput;
