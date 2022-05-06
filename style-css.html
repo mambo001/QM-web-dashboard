@@ -2,58 +2,43 @@
   
   * {
     font-family: 'Roboto', sans-serif;
+    color: #555555;
+  }
+
+  html.dark-body{
+    filter: invert(1) hue-rotate(180deg);
+  }
+
+  html.dark-body img{
+    filter: invert(1) hue-rotate(180deg);
   }
   
   body {
     padding-bottom: 128px;
-    /* background: #f3f4f6; */
-    color: #555555;
   }
 
-  .dark-body,
+  /* .dark-body,
   .dark-table{
     background: #1a1a2e!important;
     color: #fefefe!important;
-  }
+  } */
 
   #header {
-    margin: 16px 0px 16px 0px;
-  }
-  /* #search {
-    padding: 22px 16px 22px 16px;
-  } */
-  .quote {
-    margin-bottom: 16px;
-    padding: 10px 10px 24px 10px;
-    border-bottom: 1px dotted #CECECE;
-  }
-  .quote-text {
-    font-size: 1.2em;
-  }
-  .author {
-    margin-left: 24px;
-    font-weight: bold;
-    color: #676767;
-  }
-  .source {
-    font-size: 0.8em;
-    color: #676767;
-  }
-  .tag-container {
-    text-align: right;
-  }
-  .tag {
-    border-radius: 12px;
-    background-color: #17A2B8;
-    color: #FFFFFF;
-    padding: 5px 10px;
-    margin-left: 5px;
-    font-size: 0.8em;
+    margin-bottom: 24px;
+    color: #3c4043!important;
   }
 
-  #sidebar {
-    padding: 12px;
-  }
+ #header .input-field input[type=search]:focus:not(.browser-default) {
+    background-color: rgba(50,150,150,0.1);
+    border: 0;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    color: #444;
+}
+
+#header .header-icons{
+    color: #3c4043!important;
+}
 
   a.collection-item {
     cursor: pointer;
@@ -69,17 +54,18 @@
     color: #4477AA;
   }
 
-#content table tbody tr td {
+#content table tbody span.new.badge{
     white-space: nowrap;
     overflow: hidden;
     max-width: 25ch;
     text-overflow: ellipsis;
-    direction: rtl;
+    /* direction: rtl; */
     /* text-align: left; */
 }
 
-#content table tr td.green,
-#content table tr td.orange{
+#content table tbody span.new.badge.red,
+#content table tbody span.new.badge.green,
+#content table tbody span.new.badge.orange{
     animation: pulse 0.9s;
     /*transition: background .90s ease-in;*/
 }
@@ -101,6 +87,31 @@ i.icon-btn:active{
 }
 
 i.icon-btn.disabled{
+  cursor: default;
+  filter: grayscale(1);
+}
+
+.multi-btn{
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  box-sizing: border-box;
+  padding: 0 1px;
+}
+
+.multi-btn:focus{
+  background-color: rgba(33,33,33,0.1);
+}
+
+.multi-btn:hover{
+  filter: brightness(1.1);
+}
+
+.multi-btn:active{
+  filter: brightness(1.4);
+}
+
+.multi-btn.disabled{
   cursor: default;
   filter: grayscale(1);
 }

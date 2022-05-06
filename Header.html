@@ -1,32 +1,49 @@
-<div id="header" class="row">
-  <div class="input-field col s8">
-    <i class="material-icons prefix">search</i>
-    <input 
-    v-on:input="filterQuotes"
-    placeholder="Search Cases" 
-    id="search" 
-    type="search" 
-    class="validate">
-
-    <!-- <label for="first_name">First Name</label> -->
+<nav id="header" class="white">
+  <div class="nav-wrapper white container">
+    <form class="left">
+      <ul class="left" style="margin-right: 0.5rem">
+        <li>
+          <a id="monitoringViewBtn"
+            ><i class="material-icons header-icons">dashboard</i></a
+          >
+        </li>
+        <li>
+          <a id="recentCasesViewBtn"
+            ><i class="material-icons header-icons">web</i></a
+          >
+        </li>
+      </ul>
+      <div class="right input-field">
+        <input
+          id="search"
+          type="search"
+          required="required"
+          placeholder="Search Cases"
+          class="validate invalid"
+          style="min-width: 300px; width: 38vw"
+        />
+        <label class="label-icon active" for="search"
+          ><i class="material-icons header-icons">search</i></label
+        >
+        <i class="material-icons">close</i>
+      </div>
+    </form>
+    <ul class="right hide-on-med-and-down">
+      <li>
+        <a id="refreshTableBtn" v-on:click="refreshTableDate"
+          ><i class="material-icons header-icons">refresh</i></a
+        >
+      </li>
+      <li>
+        <a id="toggleDarkModeBtn" v-on:click="toggleDarkMode"
+          ><i class="material-icons header-icons">invert_colors</i></a
+        >
+      </li>
+      <!-- <li>
+          <p class="">Last updated:
+            <span id="lastUpdated" v-on:click="showStatusButtons">{{ dateObject }}<span>
+          </p>
+        </li> -->
+    </ul>
   </div>
-  <div 
-  class="input-field col s4" 
-  style="display: flex;justify-content: space-between;align-items: baseline;">
-    <button id="refreshTableBtn"
-    class="btn green white-text waves-effect waves-light"
-    v-on:click="refreshTableDate"
-    >
-      <i class="material-icons">refresh</i>
-    </button>
-    <button id="toggleDarkModeBtn"
-    class="btn black lighten-2 white-text waves-effect waves-light"
-    v-on:click="toggleDarkMode"
-    >
-      <i class="material-icons">brightness_1</i>
-    </button>
-    <p class="">Last Update: 
-      <span id="lastUpdated" v-on:click="showStatusButtons">{{ dateObject }}<span>
-    </p>
-  </div>
-</div>
+</nav>

@@ -41,53 +41,23 @@ function dateAdd(date, interval, units) {
   return ret;
 }
 
-///////////////////
 function doPost(req){
   const TAB = "All Cases";
   const DB = SpreadsheetApp.openById("1vS_Bok6_ugQmwimCdEYe8WiOVstO28bcs8lOXQPc5QE");
   const ALL_CASES_TAB = DB.getSheetByName(TAB);
+
   const body = req.postData.contents;
   const bodyJSON = JSON.parse(body);
-  let flag = req.parameter.flag || 0;
   let { action,bucketNumber } = req.parameter;
 
-  console.log(flag, action, bucketNumber)
-
-  console.log(bodyJSON);
-
-  const tab = "All Cases";
-  const db = SpreadsheetApp.openById("1vS_Bok6_ugQmwimCdEYe8WiOVstO28bcs8lOXQPc5QE");
-  const sheetCases = db.getSheetByName(tab);
 
   if (action == 'insert') {
-    return doModifiedInsert(bodyJSON, sheetCases);
+    return doModifiedInsert(bodyJSON, ALL_CASES_TAB);
 
     // const response  = [{status: 200, message: "OK"}];
   } else {
-    console.log('wtf man?!')
+    console.log('Error: action is: ', action)
   }
-  
-
-  // TODO
-  // Copy doInsert Object Shape before appending data
-  // if (flag == 1){
-  //   console.log({flag});
-  //   console.log(bodyJSON);
-  // } else {
-  //   bodyJSON.forEach((c) => {
-  //     let formattedDate = doIdentifyDate(c.lastModifiedDate);
-  //     AR_TEMP_TAB.appendRow([
-  //       formattedDate,
-  //       c.studyID,
-  //       c.caseID,
-  //       c.caseRemarks,
-  //       c.caseStatus,
-  //       c.caseAssignee
-  //     ]);
-  //   });
-  // }
-
-
 
   // return sendJSON_(response);
 }
@@ -101,29 +71,18 @@ function sendJSON_(jsonResponse){
 
 function doGet(req) {
   console.log(ldap,req)
-   var action = req.parameter.action;
-   var tab = "All Cases";
+  var action = req.parameter.action;
+  var tab = "All Cases";
   if (req.parameter.tab) {
     tab = req.parameter.tab;
   }
 
-  //   var db = SpreadsheetApp.openById("16dquyA-xIKRa7i0NN68Iuf5fW0HwYq-Fs273cuWW1B0");
-  //    var db = SpreadsheetApp.openById("1nLHf8k_NhRIp_NP16oQTqf59YxGgZ2d-kwpy4iXdMJ8");
-  //  DB PROD
-  //  Contingency Tracker 1
-  //    var db = SpreadsheetApp.openById("1QQZZIyNLxQdKTkeAepVR-elO8D8PyGycNyQwGUyTD4Y");
-  //  Contingency Tracker 2
-    // var db = SpreadsheetApp.openById("1tQDaD9hk0fBcEJ8C-azB5gkq_MhmUoTh1hZihMyljt4");
-
-    // Contingency Tracker 3
-    // 1vS_Bok6_ugQmwimCdEYe8WiOVstO28bcs8lOXQPc5QE
-    var db = SpreadsheetApp.openById("1vS_Bok6_ugQmwimCdEYe8WiOVstO28bcs8lOXQPc5QE");
-    
+  // Contingency Tracker 3
+  // 1vS_Bok6_ugQmwimCdEYe8WiOVstO28bcs8lOXQPc5QE
+  var db = SpreadsheetApp.openById("1vS_Bok6_ugQmwimCdEYe8WiOVstO28bcs8lOXQPc5QE");
   
-  
-   // Don't forget to change your Sheet Name by default is 'Sheet1'
-   var sheetUsers = db.getSheetByName(tab);
-   
+  // Don't forget to change your Sheet Name by default is 'Sheet1'
+  var sheetUsers = db.getSheetByName(tab);
    
    switch(action) {
        case "read":
