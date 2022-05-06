@@ -180,8 +180,105 @@
                 data-tooltip="CLEAR"
                 data-action="CLEAR"
                 v-bind:data-rowid="c.LDAP"
-                @click="changeStatus">clear</i>
+                  @click="changeStatus"
+                  >clear</i
+                >
+              </div>
+              <span v-else>{{ k }}</span>
+            </td>
+          </tr>
+        </tbody>
+      </table> -->
 
+    <div class="card material-table">
+      <div class="table-header">
+        <span class="table-title">Prio Table</span>
+        <div class="actions">
+          <a
+            id="filterStatusBtn"
+            class="waves-effect btn-flat nopadding"
+            @click="greet"
+          >
+            <i class="material-icons">filter_list</i>
+          </a>
+          <a
+            id="reshuffleButton"
+            class="waves-effect btn-flat nopadding"
+            @click="doReshuffle"
+            ><i class="material-icons">shuffle</i></a
+          >
+          <a
+            id="prioConfigBtn"
+            class="waves-effect btn-flat nopadding"
+            @click="togglePrioConfig"
+            data-target="prioConfigModal"
+            ><i class="material-icons">refresh</i></a
+          >
+          <a
+            id=""
+            class="waves-effect btn-flat nopadding"
+            data-target="prioConfigModal"
+            ><i class="material-icons">search</i></a
+          >
+        </div>
+      </div>
+      <table class="centered striped highlight compact" id="prioTable">
+        <thead>
+          <!-- <tr>
+            <th
+              v-for="(header, index) in prioHeader"
+              :class="{
+                'hide': optionalElements.includes(index)
+              }"
+            >
+              {{ header }}
+            </th>
+          </tr> -->
+        </thead>
+        <tbody>
+          <!-- <tr v-for="c in filteredPrio" v-bind:id="c.LDAP">
+            <td
+              v-for="(k, key, index) in c"
+              :class="{
+                  'hide': optionalElements.includes(index)
+                }"
+            >
+              <i class="material-icons" v-if="index == 6"
+                >{{ k == 'Night' ? 'brightness_4' : k == 'Morning' ?
+                'brightness_5' : 'brightness_6' }}
+              </i>
+
+              <div class="valign-center" v-else-if="index == 5">
+                <i
+                  class="icon-btn blue-text material-icons tooltipped"
+                  v-bind:class="[k == 'CASES' ? 'disabled' : '']"
+                  data-position="top"
+                  data-tooltip="CASES"
+                  data-action="CASES"
+                  v-bind:data-rowid="c.LDAP"
+                  @click="changeStatus"
+                  >event_available</i
+                >
+                <i
+                  class="icon-btn blue-text text-darken-4 material-icons tooltipped"
+                  v-bind:class="[k == 'SKIP' ? 'disabled' : '']"
+                  data-position="top"
+                  data-tooltip="SKIP"
+                  data-action="SKIP"
+                  v-bind:data-rowid="c.LDAP"
+                  @click="changeStatus"
+                  >event_busy</i
+                >
+                <i
+                  class="icon-btn material-icons tooltipped"
+                  v-bind:class="[k == '' ? 'disabled' : '']"
+                  data-position="top"
+                  data-tooltip="CLEAR"
+                  data-action="CLEAR"
+                  v-bind:data-rowid="c.LDAP"
+                  @click="changeStatus"
+                  >clear</i
+                >
             </div>
            <span v-else>{{ k }}</span>
           </td>

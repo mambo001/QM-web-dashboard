@@ -486,9 +486,87 @@
       console.log('CREATED!')
     },
     methods: {
-      renderTableData: function() {
-        google.script.run.withSuccessHandler(data => {
-          let parsedPrio = JSON.parse(data).prio
+        initializeDataTable: function () {
+          $("#prioTable").dataTable({
+            data: this.filteredPrio,
+            columns: [
+              { title: "LDAP", width: "50px" },
+              { title: "Total", width: "50px" },
+              { title: "DTD", width: "50px" },
+              { title: "MTD", width: "50px" },
+              { title: "Status", width: "50px" },
+              { title: "Override Status", width: "90px" },
+              { title: "Shift", width: "50px" },
+            ],
+            columnDefs: [
+              {
+                targets: [2],
+                visible: false,
+              },
+              {
+                className: "hide-on-small-only",
+                targets: [1, 6],
+              },
+              {
+                targets: [6],
+                visible: true,
+                render: function (data, type, row) {
+                  return `<i class='material-icons'>${
+                    ICON_TYPE[data] || "brightness_4"
+                  }</i>`;
+                },
+              },
+              {
+                targets: [5],
+                visible: true,
+                render: function (data, type, row) {
+                  return `
+                      <div class="align-center">
+                        <button class="multi-btn">
+                          <i class="material-icons blue-text tooltipped">event_available</i>
+                        </button>
+                        <button class="multi-btn">
+                          <i class="material-icons blue-text text-darken-4 tooltipped">event_busy</i>
+                        </button>
+                        <button class="
+                          multi-btn
+                          v-bind:class="[k == 'SKIP' ? 'disabled' : '']"
+                          data-position="top"
+                          data-tooltip="SKIP"
+                          data-action="SKIP"
+                          v-bind:data-rowid="c.LDAP"
+                          @click="changeStatus"
+                        ">
+                          <i class="material-icons tooltipped" style="color: inherit">clear</i>
+                        </button>
+                      </div>
+                    `;
+                },
+              },
+            ],
+            bPaginate: true,
+            order: [[3, "asc"]],
+            // "pageLength": ,
+            autoWidth: true,
+            responsive: true,
+            oLanguage: {
+              sStripClasses: "",
+              sSearch: "",
+              sSearchPlaceholder: "Enter Keywords Here",
+              sInfo: "_START_ -_END_ of _TOTAL_",
+              sLengthMenu:
+                '<span>Rows per page:</span><select class="browser-default">' +
+                '<option value="10">10</option>' +
+                '<option value="20">20</option>' +
+                '<option value="30">30</option>' +
+                '<option value="40">40</option>' +
+                '<option value="50">50</option>' +
+                '<option value="-1">All</option>' +
+                "</select></div>",
+            },
+            bAutoWidth: false,
+          });
+        },
           
           // console.log(parsedPrio,Array.isArray(parsedPrio[0]))
           parsedPrio.sort((a,b) => a.MTD < b.MTD)
